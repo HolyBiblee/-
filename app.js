@@ -1,7 +1,7 @@
 const express = require('express');
 const path = require('path');
-const session = require('express-session'); // Импорт express-session
-const indexRouter = require('./routes/index');
+const session = require('express-session');
+const indexRouter = require('./routes/index'); // Подключите маршруты
 
 const app = express();
 

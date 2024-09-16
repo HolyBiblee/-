@@ -23,9 +23,27 @@
 
   <main>
     <div class="container">
-      <h2>Изучите создателей</h2>
-      <p>Найдите новых и интересных создателей, на которых стоит подписаться.</p>
-      <!-- Добавьте контент для страницы Изучить здесь -->
+      <section class="hero">
+        <h2>Изучите создателей</h2>
+        <p>Найдите новых и интересных создателей, на которых стоит подписаться.</p>
+      </section>
+
+      <section class="content">
+        <div class="filter">
+          <label for="search">Поиск:</label>
+          <input type="text" id="search" placeholder="Поиск по имени...">
+        </div>
+        <div class="card-container">
+          <% authors.forEach(author => { %>
+            <div class="card">
+              <img src="https://via.placeholder.com/300" alt="Creators">
+              <h3><%= author.name %></h3>
+              <p><%= author.bio %></p>
+              <button>Подписаться</button>
+            </div>
+          <% }) %>
+        </div>
+      </section>
     </div>
   </main>
 

@@ -1,24 +1,37 @@
 const express = require('express');
 const router = express.Router();
+const { getConnection } = require('../db');
 
 // Главная страница
 router.get('/', (req, res) => {
   res.render('index', { title: 'Главная' });
 });
 
-// Страница Изучить
-router.get('/explore', (req, res) => {
-  res.render('explore', { title: 'Изучить' });
+
+
+
+// Маршрут для страницы "Изучить"
+router.get('/explore', async (req, res) => {
+  try {
+    const pool = await getConnection();
+    const result = await pool.request().query('SELECT * FROM Creators'); // Замените 'Authors' на название вашей таблицы
+    res.render('explore', { title: 'Изучить', authors: result.recordset });
+  } catch (err) {
+    console.error('Error fetching data:', err);
+    res.status(500).send('Ошибка при получении данных');
+  }
 });
 
-// Страница Мессенджер
+
+
+// Страница мессенджера
 router.get('/messages', (req, res) => {
   res.render('messages', { title: 'Мессенджер' });
 });
 
-// Страница Профиль
+// Страница профиля
 router.get('/profile', (req, res) => {
-    res.render('profile', { title: 'Профиль' });
+  res.render('profile', { title: 'Профиль' });
 });
 
 module.exports = router;
