@@ -2,6 +2,11 @@ const express = require('express');
 const router = express.Router();
 const { getConnection } = require('../db');
 
+// Функция проверки аутентификации
+const isAuthenticated = (req) => {
+  return req.session && req.session.isAuthenticated;
+};
+
 // Главная страница
 router.get('/', (req, res) => {
   res.render('index', { title: 'Главная' });
