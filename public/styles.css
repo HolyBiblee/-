@@ -216,3 +216,81 @@ footer {
 .edit-profile:hover {
     background-color: #e60039;
 }
+
+/* Стили для страниц регистрации и входа */
+.form-container {
+    background-color: white;
+    padding: 30px;
+    max-width: 400px;
+    margin: 50px auto;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+  }
+  
+  .form-container h2 {
+    text-align: center;
+    margin-bottom: 20px;
+    font-size: 24px;
+  }
+  
+  .form-container label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+  }
+  
+  .form-container input[type="text"],
+  .form-container input[type="password"],
+  .form-container input[type="email"] {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 20px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    box-sizing: border-box;
+  }
+  
+  .form-container input[type="submit"] {
+    width: 100%;
+    padding: 10px;
+    background-color: #333;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+  }
+  
+  .form-container input[type="submit"]:hover {
+    background-color: #555;
+  }
+  
+  .form-container .form-footer {
+    text-align: center;
+    margin-top: 20px;
+  }
+  
+  .form-container .form-footer a {
+    color: #333;
+    text-decoration: none;
+  }
+  
+  .form-container .form-footer a:hover {
+    text-decoration: underline;
+  }
+  
+  /* Дополнительные стили */
+  footer {
+    background-color: #333;
+    color: white;
+    text-align: center;
+    padding: 10px 0;
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+  }
+  
+  footer p {
+    margin: 0;
+    font-size: 14px;
+  }
