@@ -1,3 +1,4 @@
+// app.js
 const express = require('express');
 const path = require('path');
 const session = require('express-session');
@@ -11,7 +12,8 @@ const app = express();
 app.use(session({
   secret: 'your-secret-key',
   resave: false,
-  saveUninitialized: true,
+  saveUninitialized: false,
+  cookie: { secure: false } // Установите `true` при использовании HTTPS
 }));
 
 app.use(passport.initialize());
@@ -35,6 +37,11 @@ app.use('/', require('./routes/index'));
 // Обработка 404 ошибок
 app.use((req, res, next) => {
   res.status(404).send('Страница не найдена');
+});
+
+app.use((req, res, next) => {
+  res.locals.user = req.user; // Делает текущего пользователя доступным в шаблонах
+  next();
 });
 
 module.exports = app;

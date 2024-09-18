@@ -14,7 +14,23 @@ const getUserByUsername = async (username) => {
     throw err;
   }
 };
-
+async function getUserById(userId) {
+  try {
+    const pool = await sql.connect(config);
+    const result = await pool.request()
+      .input('Id', sql.Int, userId)
+      .query('SELECT Id, UserName, email, Description FROM Users WHERE Id = @Id');
+    
+    if (result.recordset.length > 0) {
+      return result.recordset[0];
+    } else {
+      throw new Error('Пользователь не найден');
+    }
+  } catch (err) {
+    console.error('Ошибка при получении пользователя:', err);
+    throw err;
+  }
+}
 const createUser = async (username, hashedPassword) => {
   try {
     const pool = await sql.connect(config);
