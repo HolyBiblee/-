@@ -19,7 +19,7 @@ async function getUserById(userId) {
     const pool = await sql.connect(config);
     const result = await pool.request()
       .input('Id', sql.Int, userId)
-      .query('SELECT Id, UserName, email, Description FROM Users WHERE Id = @Id');
+      .query('SELECT Id, profileName, UserName, email, Description FROM Users WHERE Id = @Id');
     
     if (result.recordset.length > 0) {
       return result.recordset[0];

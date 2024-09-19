@@ -7,7 +7,6 @@ module.exports = function(passport) {
   passport.use(new LocalStrategy(
     async function(username, password, done) {
       try {
-        // Получение подключения к базе данных
         const pool = await getConnection();
         
         // Получение пользователя из базы данных
@@ -37,18 +36,13 @@ module.exports = function(passport) {
   ));
 
   passport.serializeUser(function(user, done) {
-    console.log('Сериализация пользователя:', user); // Добавлено для отладки
-    // Сериализация пользователя: сохраняем только ID пользователя
-    if (user.Id) {
-      done(null, user.Id); // Убедитесь, что user.Id существует
-    } else {
-      done(new Error('User ID не найден для сериализации'));
-    }
+    console.log('Сериализация пользователя:', user); // Для отладки
+    done(null, user.Id); // Сохраните ID пользователя
   });
 
   passport.deserializeUser(async function(id, done) {
     try {
-      console.log('Десериализация пользователя, ID:', id); // Добавлено для отладки
+      console.log('Десериализация пользователя, ID:', id); // Для отладки
       const pool = await getConnection();
       const result = await pool.request()
         .input('id', sql.Int, id)
@@ -57,10 +51,10 @@ module.exports = function(passport) {
       const user = result.recordset[0];
       
       if (user) {
-        console.log('Найден пользователь:', user); // Добавлено для отладки
-        done(null, user);  // Передаем весь объект пользователя
+        console.log('Найден пользователь:', user); // Для отладки
+        done(null, user);  // Передаем объект пользователя
       } else {
-        done(new Error('Пользователь не найден'));
+        done(null, false); // Убедитесь, что не передаете ошибку, если пользователь не найден
       }
     } catch (err) {
       console.error('Ошибка при десериализации пользователя:', err);

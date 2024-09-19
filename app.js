@@ -20,6 +20,16 @@ app.use(passport.initialize());
 app.use(passport.session());
 app.use(flash());
 
+// Middleware для обработки JSON и URL-encoded данных
+app.use(express.json());
+app.use(express.urlencoded({ extended: false }));
+
+// Делает текущего пользователя доступным в шаблонах
+app.use((req, res, next) => {
+  res.locals.user = req.user;
+  next();
+});
+
 // Настройка представлений
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');
@@ -27,21 +37,12 @@ app.set('view engine', 'ejs');
 // Настройка статических файлов
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Middleware для обработки JSON и URL-encoded данных
-app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
-
 // Использование маршрутов (включая все аутентификационные маршруты в index.js)
 app.use('/', require('./routes/index'));
 
 // Обработка 404 ошибок
 app.use((req, res, next) => {
   res.status(404).send('Страница не найдена');
-});
-
-app.use((req, res, next) => {
-  res.locals.user = req.user; // Делает текущего пользователя доступным в шаблонах
-  next();
 });
 
 module.exports = app;

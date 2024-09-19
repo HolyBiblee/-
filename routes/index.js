@@ -6,6 +6,79 @@ const bcrypt = require('bcrypt');
 const sql = require('mssql');
 const { getUserById } = require('../models/User');
 const { ensureGuest, ensureAuth } = require('../middleware/authMiddleware');
+const multer = require('multer');
+const path = require('path');
+
+// Настройка хранения загруженных файлов с помощью multer
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, 'public/uploads/'); // Путь к папке для хранения изображений
+  },
+  filename: (req, file, cb) => {
+    cb(null, Date.now() + path.extname(file.originalname)); // Уникальное имя файла
+  }
+});
+
+const upload = multer({ storage: storage });
+
+router.post('/login', passport.authenticate('local', {
+  successRedirect: '/profile',
+  failureRedirect: '/login',
+  failureFlash: true
+}), (req, res) => {
+  console.log('Пользователь вошел:', req.user); // Логирование после аутентификации
+});
+
+// Маршрут для редактирования профиля
+router.post('/profile/edit', upload.single('profilePicture'), async (req, res) => {
+  if (!req.isAuthenticated()) {
+    return res.redirect('/login');
+  }
+
+  const userId = req.user.Id; // ID текущего пользователя
+
+  // Получаем данные из формы
+  const { username, email, description, profileName } = req.body; // Добавляем profileName
+  let profilePicture = req.file ? req.file.path.replace(/\\/g, '/') : null;
+
+  // Если нет нового файла, сохраняем старое значение
+  if (!profilePicture) {
+      const result = await pool.request()
+          .input('id', sql.Int, userId)
+          .query('SELECT profilePicture FROM Users WHERE id = @id');
+      profilePicture = result.recordset[0].profilePicture;
+  }
+  console.log('Загруженный файл:', req.file);
+
+  try {
+    const pool = await getConnection();
+    
+    // Выполняем запрос на обновление данных
+    await pool.request()
+      .input('id', sql.Int, userId)
+      .input('username', sql.NVarChar, username)
+      .input('email', sql.NVarChar, email)
+      .input('description', sql.NVarChar, description)
+      .input('profileName', sql.NVarChar, profileName) // Добавляем input для profileName
+      .input('profilePicture', sql.NVarChar, profilePicture)
+      .query(`
+        UPDATE Users
+        SET email = @email,
+            Description = @description,
+            profilePicture = @profilePicture,
+            profileName = @profileName
+        WHERE id = @id
+      `);
+
+    res.redirect('/profile');
+  } catch (err) {
+    console.error('Ошибка при обновлении профиля:', err);
+    res.status(500).send('Ошибка при обновлении профиля');
+  }
+});
+
+
+
 
 // Функция проверки аутентификации
 const isAuthenticated = (req) => {
@@ -39,21 +112,30 @@ router.get('/profile', async (req, res) => {
   if (!req.isAuthenticated()) {
     return res.redirect('/login');
   }
-  
+
+  const userId = req.user.Id; // Получаем ID пользователя из сессии
+
   try {
-    const userId = req.user.id; // Получаем ID пользователя из сессии
     const pool = await getConnection();
     const result = await pool.request()
       .input('id', sql.Int, userId)
-      .query('SELECT * FROM Users WHERE id = @id');
-    
+      .query('SELECT id, username, email, Description, profilePicture, profileName FROM Users WHERE id = @id');
+
     const user = result.recordset[0];
+
+    if (!user) {
+      return res.status(404).send('Пользователь не найден');
+    }
+
     res.render('profile', { title: 'Профиль', user });
   } catch (err) {
-    console.error('Error fetching user data:', err);
+    console.error('Ошибка при получении данных пользователя:', err);
     res.status(500).send('Ошибка при получении данных пользователя');
   }
 });
+
+
+
 
 
 // Регистрация (доступна только для неавторизованных пользователей)
@@ -105,9 +187,14 @@ router.post('/login', passport.authenticate('local', {
 }));
 
 // Выход
-router.get('/logout', (req, res) => {
-  req.logout();
-  res.redirect('/');
+router.get('/logout', (req, res, next) => {
+  req.logout(function(err) {
+    if (err) {
+      return next(err); // Если произошла ошибка, передаем её в следующий middleware
+    }
+    res.redirect('/'); // Если всё прошло успешно, редирект на главную страницу
+  });
 });
+
 
 module.exports = router;

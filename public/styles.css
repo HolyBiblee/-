@@ -7,6 +7,7 @@ body {
     padding: 0;
 }
 
+/* Контейнер */
 .container {
     width: 90%;
     max-width: 1200px;
@@ -99,6 +100,7 @@ nav ul li a:hover {
     width: 100%;
     cursor: pointer;
     font-size: 16px;
+    border-radius: 0 0 8px 8px;
 }
 
 .card button:hover {
@@ -111,6 +113,14 @@ footer {
     color: white;
     text-align: center;
     padding: 10px 0;
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+}
+
+footer p {
+    margin: 0;
+    font-size: 14px;
 }
 
 /* Страница Изучить */
@@ -140,7 +150,7 @@ footer {
 #chat-container {
     display: flex;
     flex-direction: column;
-    height: 500px; /* Установите нужную высоту */
+    height: 500px;
     border: 1px solid #ddd;
     border-radius: 8px;
     background: #fff;
@@ -200,6 +210,9 @@ footer {
     border-radius: 50%;
     width: 150px;
     height: 150px;
+    object-fit: cover;
+    border: 2px solid #ddd;
+    margin-bottom: 20px;
 }
 
 .edit-profile {
@@ -211,12 +224,58 @@ footer {
     font-size: 16px;
     border-radius: 5px;
     margin-top: 10px;
+    transition: background-color 0.3s ease;
 }
 
 .edit-profile:hover {
     background-color: #e60039;
 }
 
+/* Форма редактирования профиля */
+#editProfileForm {
+    margin-top: 20px;
+    padding: 20px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    background-color: #f9f9f9;
+    transition: opacity 0.3s ease, max-height 0.3s ease;
+}
+
+#editProfileForm input, #editProfileForm textarea {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    box-sizing: border-box;
+}
+
+#editProfileForm input[type="file"] {
+    border: none;
+    padding: 0;
+}
+
+#editProfileForm button {
+    background-color: #28a745;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background-color 0.3s ease;
+}
+
+#editProfileForm button:hover {
+    background-color: #218838;
+}
+
+#profilePicturePreview {
+    display: block;
+    margin-top: 10px;
+    max-width: 200px;
+    border-radius: 5px;
+}
 /* Стили для страниц регистрации и входа */
 .form-container {
     background-color: white;
@@ -225,32 +284,32 @@ footer {
     margin: 50px auto;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
     border-radius: 8px;
-  }
-  
-  .form-container h2 {
+}
+
+.form-container h2 {
     text-align: center;
     margin-bottom: 20px;
     font-size: 24px;
-  }
-  
-  .form-container label {
+}
+
+.form-container label {
     display: block;
     margin-bottom: 5px;
     font-weight: bold;
-  }
-  
-  .form-container input[type="text"],
-  .form-container input[type="password"],
-  .form-container input[type="email"] {
+}
+
+.form-container input[type="text"],
+.form-container input[type="password"],
+.form-container input[type="email"] {
     width: 100%;
     padding: 10px;
     margin-bottom: 20px;
     border: 1px solid #ddd;
     border-radius: 4px;
     box-sizing: border-box;
-  }
-  
-  .form-container input[type="submit"] {
+}
+
+.form-container input[type="submit"] {
     width: 100%;
     padding: 10px;
     background-color: #333;
@@ -259,38 +318,23 @@ footer {
     border-radius: 4px;
     cursor: pointer;
     font-size: 16px;
-  }
-  
-  .form-container input[type="submit"]:hover {
+    transition: background-color 0.3s ease;
+}
+
+.form-container input[type="submit"]:hover {
     background-color: #555;
-  }
-  
-  .form-container .form-footer {
+}
+
+.form-container .form-footer {
     text-align: center;
     margin-top: 20px;
-  }
-  
-  .form-container .form-footer a {
+}
+
+.form-container .form-footer a {
     color: #333;
     text-decoration: none;
-  }
-  
-  .form-container .form-footer a:hover {
+}
+
+.form-container .form-footer a:hover {
     text-decoration: underline;
-  }
-  
-  /* Дополнительные стили */
-  footer {
-    background-color: #333;
-    color: white;
-    text-align: center;
-    padding: 10px 0;
-    position: fixed;
-    bottom: 0;
-    width: 100%;
-  }
-  
-  footer p {
-    margin: 0;
-    font-size: 14px;
-  }
+}
