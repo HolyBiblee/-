@@ -30,6 +30,14 @@ app.use((req, res, next) => {
   next();
 });
 
+app.use((req, res, next) => {
+  console.log(`${req.method} ${req.url}`);
+  next();
+});
+
+// Обработка POST запросов
+app.use(express.urlencoded({ extended: true }));
+
 // Настройка представлений
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');
@@ -42,7 +50,7 @@ app.use('/', require('./routes/index'));
 
 // Обработка 404 ошибок
 app.use((req, res, next) => {
-  res.status(404).send('Страница не найдена');
+  res.status(404).send('Страница не найдена)))');
 });
 
 module.exports = app;

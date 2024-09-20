@@ -8,6 +8,68 @@ const { getUserById } = require('../models/User');
 const { ensureGuest, ensureAuth } = require('../middleware/authMiddleware');
 const multer = require('multer');
 const path = require('path');
+const upload = multer({ dest: 'public/uploads' }); // Путь для сохранения файлов
+
+
+// Удаление поста
+router.post('/post/delete/:id', async (req, res) => {
+  console.log('Попытка удалить пост с ID:', req.params.id); // Логирование попытки удаления
+ 
+  if (!req.isAuthenticated()) {
+    return res.redirect('/login');
+  }
+
+  const postId = req.params.id;
+console.log('Deleting post with ID:', postId);
+  try {
+    const pool = await getConnection();
+    await pool.request()
+      .input('postId', sql.Int, postId)
+      .query('DELETE FROM Posts WHERE id = @postId');
+
+    res.redirect('/profile'); // Перенаправление на страницу профиля после удаления
+    
+
+  } catch (err) {
+    console.error('Ошибка при удалении поста:', err);
+    res.status(500).send('Ошибка при удалении поста');
+  }
+});
+
+
+
+// Путь для загрузки контента в профиль
+router.post('/upload', upload.single('media'), async (req, res) => {
+  if (!req.isAuthenticated()) {
+    return res.redirect('/login');
+  }
+
+  const userId = req.user.Id;
+  const { caption } = req.body;
+  const mediaType = req.file.mimetype.startsWith('image') ? 'photo' : 'video';
+  const mediaPath = '/uploads/' + req.file.filename; // или другой способ формирования пути
+  
+
+
+  try {
+    const pool = await getConnection();
+    await pool.request()
+      .input('userId', sql.Int, userId)
+      .input('mediaType', sql.NVarChar, mediaType)
+      .input('mediaPath', sql.NVarChar, mediaPath)
+      .input('caption', sql.NVarChar, caption)
+      .query(`
+        INSERT INTO Posts (userId, mediaType, mediaPath, caption)
+        VALUES (@userId, @mediaType, @mediaPath, @caption)
+      `);
+
+    res.redirect('/profile');
+  } catch (err) {
+    console.error('Ошибка при загрузке контента:', err);
+    res.status(500).send('Ошибка при загрузке контента');
+  }
+});
+
 
 // Настройка хранения загруженных файлов с помощью multer
 const storage = multer.diskStorage({
@@ -19,14 +81,14 @@ const storage = multer.diskStorage({
   }
 });
 
-const upload = multer({ storage: storage });
+
 
 router.post('/login', passport.authenticate('local', {
   successRedirect: '/profile',
   failureRedirect: '/login',
   failureFlash: true
 }), (req, res) => {
-  console.log('Пользователь вошел:', req.user); // Логирование после аутентификации
+
 });
 
 // Маршрут для редактирования профиля
@@ -48,7 +110,7 @@ router.post('/profile/edit', upload.single('profilePicture'), async (req, res) =
           .query('SELECT profilePicture FROM Users WHERE id = @id');
       profilePicture = result.recordset[0].profilePicture;
   }
-  console.log('Загруженный файл:', req.file);
+ 
 
   try {
     const pool = await getConnection();
@@ -123,16 +185,29 @@ router.get('/profile', async (req, res) => {
 
     const user = result.recordset[0];
 
+    // Получение постов пользователя
+    const posts = await pool.request()
+    .input('userId', sql.Int, userId)
+    .query('SELECT id, mediaType, mediaPath, caption FROM Posts WHERE userId = @userId');
+
+
+    // Удаляем 'public/' из mediaPath
+    posts.recordset.forEach(post => {
+      post.mediaPath = post.mediaPath.replace('public/', '');
+    });
+
     if (!user) {
       return res.status(404).send('Пользователь не найден');
     }
 
-    res.render('profile', { title: 'Профиль', user });
+    res.render('profile', { title: 'Профиль', user, posts: posts.recordset });
   } catch (err) {
     console.error('Ошибка при получении данных пользователя:', err);
     res.status(500).send('Ошибка при получении данных пользователя');
   }
 });
+
+
 
 
 
@@ -147,16 +222,16 @@ router.get('/register', ensureGuest, (req, res) => {
 router.post('/register', async (req, res) => {
   const { username, email, password } = req.body;
 
-  console.log(`Регистрация пользователя: ${username}, ${email}`);
+
 
   try {
     // Хеширование пароля
     const hashedPassword = await bcrypt.hash(password, 10);
-    console.log(`Хешированный пароль для ${username}: ${hashedPassword}`);
+
 
     // Получение подключения к базе данных
     const pool = await getConnection();
-    console.log('Подключение к базе данных успешно.');
+
 
     // Добавление пользователя в базу данных
     const result = await pool.request()
@@ -165,7 +240,6 @@ router.post('/register', async (req, res) => {
       .input('PasswordHash', sql.VarChar, hashedPassword)  // Передаем хешированный пароль
       .query('INSERT INTO Users (username, email, PasswordHash) VALUES (@username, @email, @PasswordHash)');
 
-    console.log(`Пользователь ${username} успешно зарегистрирован.`);
 
     res.redirect('/login');
   } catch (err) {

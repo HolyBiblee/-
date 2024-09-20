@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title><%= title %></title>
   <link rel="stylesheet" href="/styles.css">
-  
 </head>
 <body>
   <header>
@@ -16,10 +15,10 @@
           <li><a href="/">Главная</a></li>
           <li><a href="/explore">Изучить</a></li>
           <li><a href="/messages">Мессенджер</a></li>
-          <% if (!user) { %> <!-- Если пользователь не авторизован -->
+          <% if (!user) { %>
             <li><a href="/login">Войти</a></li>
             <li><a href="/register">Регистрация</a></li>
-          <% } else { %> <!-- Если пользователь авторизован -->
+          <% } else { %>
             <li><a href="/profile">Профиль</a></li>
             <li><a href="/logout">Выйти</a></li>
           <% } %>
@@ -32,42 +31,59 @@
     <div class="container">
       <section class="profile">
         <h2>Профиль пользователя</h2>
-        <div class="profile-info">
-          <img src="/uploads/<%= user.profilePicture.split('/').pop() %>" alt="User Avatar" class="profile-avatar">
-
-
-
-          <div>
+        <div class="profile-container">
+          <div class="profile-info">
+            <img src="/uploads/<%= user.profilePicture.split('/').pop() %>" alt="User Avatar" class="profile-avatar">
             <h3><%= user.profileName || 'Имя пользователя отсутствует' %></h3>
             <p><%= user.Description || 'Описание отсутствует' %></p>
-
-
-
-            <!-- Кнопка для редактирования профиля -->
             <button class="edit-profile" onclick="toggleEditForm()">Редактировать профиль</button>
-
-            <!-- Форма редактирования профиля (скрыта по умолчанию) -->
             <div id="editProfileForm" style="display:none;">
               <form action="/profile/edit" method="POST" enctype="multipart/form-data">
                 <label for="profileName">Имя пользователя:</label>
                 <input type="text" id="profileName" name="profileName" value="<%= user.profileName %>" required>
-
                 <label for="email">Email:</label>
                 <input type="email" id="email" name="email" value="<%= user.email %>" required>
-
                 <label for="description">Описание:</label>
                 <textarea id="description" name="description"><%= user.Description || 'Не указано' %></textarea>
-
-
                 <label for="profilePicture">Фотография профиля:</label>
                 <input type="file" id="profilePicture" name="profilePicture">
-
                 <button type="submit">Сохранить изменения</button>
               </form>
             </div>
-
+          </div>
+          <div class="upload-container">
+            <h2>Загрузить контент</h2>
+            <form class="upload-form" action="/upload" method="POST" enctype="multipart/form-data">
+              <label for="caption">Подпись:</label>
+              <input type="text" name="caption" id="caption" required>
+              <label for="media">Выберите файл:</label>
+              <input type="file" name="media" id="media" accept="image/*,video/*" required>
+              <button type="submit">Загрузить</button>
+            </form>
           </div>
         </div>
+        <section class="user-posts">
+          <h3>Ваши посты</h3>
+          <div class="posts-container">
+            <% posts.forEach(post => { %>
+              <div class="post">
+                <h4><%= post.caption || 'Без подписи' %></h4>
+                <% if (post.mediaType === 'photo') { %>
+                  <img src="<%= post.mediaPath %>" alt="User Post" class="user-media">
+                <% } else if (post.mediaType === 'video') { %>
+                  <video controls class="user-media">
+                    <source src="<%= post.mediaPath %>" type="video/mp4">
+                    Ваш браузер не поддерживает видео.
+                  </video>
+                <% } %>
+                <form action="/post/delete/<%= post.id %>" method="POST" onsubmit="return confirm('Вы уверены, что хотите удалить этот пост?');">
+                  <button type="submit" class="delete-button">Удалить пост</button>
+              </form>
+              
+              </div>
+            <% }) %>
+          </div>
+        </section>
       </section>
     </div>
   </main>
@@ -82,20 +98,6 @@
     function toggleEditForm() {
       var form = document.getElementById('editProfileForm');
       form.style.display = (form.style.display === 'none' || form.style.display === '') ? 'block' : 'none';
-    }
-
-    function previewProfilePicture(event) {
-      var preview = document.getElementById('profilePicturePreview');
-      var file = event.target.files[0];
-      var reader = new FileReader();
-
-      reader.onload = function(e) {
-        preview.src = e.target.result;
-      };
-
-      if (file) {
-        reader.readAsDataURL(file);
-      }
     }
   </script>
 </body>
