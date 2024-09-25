@@ -43,7 +43,6 @@
         <div class="card-grid">
           <% authors.forEach(author => { %>
             <div class="card"><img src="<%= author.profilePicture ? author.profilePicture.replace('public/', '') : '/uploads/default-avatar.png' %>" alt="<%= author.profileName || 'Имя отсутствует' %>" class="author-avatar">
-
               <h3><%= author.profileName %></h3>
               <p><%= author.Description || 'Описание отсутствует' %></p>
               <form action="/subscribe/<%= author.id %>" method="POST">
