@@ -226,6 +226,64 @@ body {
     background-color: #0056b3;
 }
 
+/* Стили для формы редактирования профиля */
+form {
+    max-width: 600px; /* Максимальная ширина формы */
+    margin: 20px auto; /* Центрирование формы по горизонтали */
+    padding: 20px; /* Внутренние отступы */
+    border: 1px solid #ccc; /* Цвет границы */
+    border-radius: 8px; /* Скругление углов */
+    background-color: #f9f9f9; /* Цвет фона */
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); /* Тень */
+}
+
+/* Стили для заголовков и меток */
+label {
+    font-weight: bold; /* Жирный шрифт */
+    margin-top: 15px; /* Отступ сверху */
+    display: block; /* Отображение метки как блочный элемент */
+}
+
+/* Стили для полей ввода */
+input[type="text"],
+input[type="email"],
+textarea {
+    width: 100%; /* Ширина 100% от родительского элемента */
+    padding: 10px; /* Внутренние отступы */
+    margin-top: 5px; /* Отступ сверху */
+    border: 1px solid #ccc; /* Цвет границы */
+    border-radius: 4px; /* Скругление углов */
+    box-sizing: border-box; /* Учет отступов и границ в ширине */
+}
+
+/* Стили для поля загрузки файла */
+input[type="file"] {
+    margin-top: 5px; /* Отступ сверху */
+}
+
+/* Стили для кнопки */
+button {
+    background-color: #4CAF50; /* Зеленый цвет кнопки */
+    color: white; /* Цвет текста на кнопке */
+    padding: 10px 15px; /* Внутренние отступы */
+    border: none; /* Убираем границу */
+    border-radius: 4px; /* Скругление углов */
+    cursor: pointer; /* Указатель при наведении */
+    margin-top: 20px; /* Отступ сверху */
+    transition: background-color 0.3s; /* Плавный переход цвета фона */
+}
+
+button:hover {
+    background-color: #45a049; /* Цвет кнопки при наведении */
+}
+
+/* Стили для области описания */
+textarea {
+    height: 100px; /* Высота текстовой области */
+    resize: vertical; /* Разрешить изменение размера по вертикали */
+}
+
+
 /* Посты */
 .user-posts {
     margin-top: 20px;
@@ -328,66 +386,150 @@ body {
     background-color: #e60039;
 }
 
-/* Главная страница */
+/* Секция "hero" */
 .hero {
+    background: linear-gradient(135deg, #ff0044 0%, #ff7900 100%);
+    color: white;
     text-align: center;
+    padding: 100px 20px;
     margin-bottom: 20px;
-}
-
-.hero h2 {
-    font-size: 32px;
+  }
+  
+  .hero h2 {
+    font-size: 48px;
     margin-bottom: 10px;
-}
-
-.hero p {
+  }
+  
+  .hero p {
+    font-size: 24px;
+    margin-bottom: 20px;
+  }
+  
+  .explore-btn {
+    background-color: white;
+    color: #ff0044;
+    padding: 10px 30px;
+    border-radius: 30px;
+    text-decoration: none;
     font-size: 18px;
-    color: #555;
-}
-
-/* Карточки контента */
-.content {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 20px;
-}
-
-.card {
-    background: white;
-    border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    overflow: hidden;
-    width: 300px;
-}
-
-.card img {
-    width: 100%;
-    height: auto;
-}
-
-.card h3 {
-    font-size: 20px;
-    margin: 10px;
-}
-
-.card p {
-    font-size: 16px;
-    margin: 0 10px 10px;
-}
-
-.card button {
+    transition: background-color 0.3s ease;
+  }
+  
+  .explore-btn:hover {
+    background-color: #ff7900;
+    color: white;
+  }
+  
+  /* Стили для кнопок */
+  button {
     background-color: #ff0044;
     color: white;
+    padding: 10px 20px;
     border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  
+  button:hover {
+    background-color: #e60039;
+  }
+  
+
+  .authors-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); /* Автоматическое заполнение колонок */
+    gap: 20px; /* Отступы между карточками */
+    margin-top: 30px;
+  }
+  
+  .author-card {
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    padding: 15px;
+    text-align: center;
+    transition: transform 0.3s ease;
+  }
+  
+  .author-card:hover {
+    transform: translateY(-10px); /* Эффект при наведении */
+  }
+  
+  .author-avatar {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-bottom: 15px;
+  }
+  
+  .author-card h3 {
+    font-size: 18px;
+    margin-bottom: 10px;
+  }
+  
+  .author-card p {
+    font-size: 14px;
+    color: #666;
+    margin-bottom: 15px;
+  }
+  
+  .author-card button {
+    background-color: #007bff;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  
+  .author-card button:hover {
+    background-color: #0056b3;
+  }
+  
+  
+  /* Адаптивность */
+  @media (max-width: 768px) {
+    .hero h2 {
+      font-size: 32px;
+    }
+    
+    .hero p {
+      font-size: 18px;
+    }
+  
+    .explore-btn {
+      font-size: 16px;
+    }
+  }
+  
+/* Поисковая строка */
+.search {
+    text-align: center;
+    margin-bottom: 20px;
+  }
+  
+  .search input {
     padding: 10px;
     width: 100%;
-    cursor: pointer;
-    font-size: 16px;
-    border-radius: 0 0 8px 8px;
-}
-
-.card button:hover {
-    background-color: #e60039;
-}
+    max-width: 400px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+  }
+  
+  /* Рекомендации */
+.recommendations {
+    margin: 40px 0;
+  }
+  
+  .recommendations h2 {
+    text-align: center;
+    margin-bottom: 20px;
+    font-size: 28px;
+  }
+   
 
 /* Страница Изучить */
 .filter {

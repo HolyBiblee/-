@@ -9,27 +9,138 @@ const { ensureGuest, ensureAuth } = require('../middleware/authMiddleware');
 const multer = require('multer');
 const path = require('path');
 const upload = multer({ dest: 'public/uploads' }); // Путь для сохранения файлов
+const fs = require('fs');
 
 
-// Удаление поста
-router.post('/post/delete/:id', async (req, res) => {
-  console.log('Попытка удалить пост с ID:', req.params.id); // Логирование попытки удаления
- 
-  if (!req.isAuthenticated()) {
-    return res.redirect('/login');
+// Удаление аккаунта
+router.post('/delete-account', async (req, res) => {
+  if (!req.user) {
+    return res.status(401).send('Вы не авторизованы');
   }
 
-  const postId = req.params.id;
-console.log('Deleting post with ID:', postId);
   try {
     const pool = await getConnection();
+    const userId = req.user.Id; // Используйте Id вместо id
+    console.log('Попытка удалить аккаунт с ID:', userId); // Вывод ID в консоль
+
+    const result = await pool.request()
+      .input('id', sql.Int, userId)
+      .query('DELETE FROM Users WHERE Id = @id'); // Убедитесь, что здесь тоже используется Id
+
+    console.log('Результат удаления:', result); // Вывод результата запроса
+
+    req.logout((err) => {
+      if (err) {
+        console.error('Ошибка выхода из системы:', err);
+        return res.status(500).send('Ошибка сервера');
+      }
+      res.redirect('/'); // Перенаправляем на главную страницу
+    });
+  } catch (err) {
+    console.error('Ошибка удаления аккаунта:', err);
+    res.status(500).send('Ошибка сервера');
+  }
+});
+
+
+
+
+// Маршрут для подписки
+router.post('/subscribe/:followedId', async (req, res) => {
+  if (!req.isAuthenticated()) {
+      return res.redirect('/login');
+  }
+
+  const followerId = req.user.id;  // Текущий пользователь
+  const followedId = req.params.followedId;  // Автор, на которого подписываются
+
+  try {
+      const pool = await getConnection();
+      await pool.request()
+          .input('followerId', sql.Int, followerId)
+          .input('followedId', sql.Int, followedId)
+          .query('INSERT INTO Subscriptions (followerId, followedId) VALUES (@followerId, @followedId)');
+      
+      res.redirect('/explore');
+  } catch (err) {
+      console.error('Ошибка при подписке:', err);
+      res.status(500).send('Ошибка при подписке');
+  }
+});
+
+// Маршрут для отписки
+router.post('/unsubscribe/:followedId', async (req, res) => {
+  if (!req.isAuthenticated()) {
+      return res.redirect('/login');
+  }
+
+  const followerId = req.user.id;
+  const followedId = req.params.followedId;
+
+  try {
+      const pool = await getConnection();
+      await pool.request()
+          .input('followerId', sql.Int, followerId)
+          .input('followedId', sql.Int, followedId)
+          .query('DELETE FROM Subscriptions WHERE followerId = @followerId AND followedId = @followedId');
+      
+      res.redirect('/explore');
+  } catch (err) {
+      console.error('Ошибка при отписке:', err);
+      res.status(500).send('Ошибка при отписке');
+  }
+});
+
+
+// Функция поиска
+function filterAuthors() {
+  const query = document.getElementById('search').value.toLowerCase();
+  const cards = document.querySelectorAll('.card');
+
+  cards.forEach(card => {
+    const authorName = card.querySelector('h3').textContent.toLowerCase();
+    if (authorName.includes(query)) {
+      card.style.display = 'block';
+    } else {
+      card.style.display = 'none';
+    }
+  });
+}
+
+
+
+// Маршрут для удаления поста
+router.post('/post/delete/:id', async (req, res) => {
+  const postId = req.params.id;
+
+  try {
+    const pool = await getConnection();
+
+    // Получаем информацию о посте, чтобы найти медиафайл
+    const result = await pool.request()
+      .input('id', sql.Int, postId)
+      .query('SELECT mediaPath FROM Posts WHERE id = @id');
+
+    const post = result.recordset[0];
+
+    if (!post) {
+      return res.status(404).send('Пост не найден');
+    }
+
+    // Удаление файла медиа из файловой системы
+    const mediaFilePath = path.join(__dirname, '..', 'uploads', post.mediaPath);
+    fs.unlink(mediaFilePath, (err) => {
+      if (err) {
+        console.error('Ошибка при удалении файла:', err);
+      }
+    });
+
+    // Удаление поста из базы данных
     await pool.request()
-      .input('postId', sql.Int, postId)
-      .query('DELETE FROM Posts WHERE id = @postId');
+      .input('id', sql.Int, postId)
+      .query('DELETE FROM Posts WHERE id = @id');
 
-    res.redirect('/profile'); // Перенаправление на страницу профиля после удаления
-    
-
+    res.redirect('/profile'); // Перенаправление на профиль после удаления поста
   } catch (err) {
     console.error('Ошибка при удалении поста:', err);
     res.status(500).send('Ошибка при удалении поста');
@@ -147,10 +258,43 @@ const isAuthenticated = (req) => {
   return req.session && req.session.isAuthenticated;
 };
 
-// Главная страница
-router.get('/', (req, res) => {
-  res.render('index', { title: 'Главная', user: req.user });
+// Маршрут для главной страницы
+router.get('/', async (req, res) => {
+  try {
+    const pool = await getConnection();
+
+    // Получите список всех авторов (всех зарегистрированных пользователей)
+    const authorsResult = await pool.request().query('SELECT * FROM Users');
+    const authors = authorsResult.recordset;
+
+    // Логируем информацию об авторах
+    console.log('Authors:', authors);
+
+    // Получите рекомендации (например, популярных авторов)
+    const recommendationsResult = await pool.request().query('SELECT * FROM Users WHERE isPopular = 1'); 
+    const recommendations = recommendationsResult.recordset;
+
+    // Проверяем, есть ли рекомендации
+    const recommendationsMessage = recommendations.length === 0 ? 'Рекомендации отсутствуют' : null;
+    console.log('Recommendations:', recommendations); // Логируем рекомендации
+
+    // Передаем данные в шаблон
+    res.render('index', {
+      title: 'Главная страница',
+      user: req.user, // Если пользователь авторизован
+      authors: authors, // Список авторов
+      recommendations: recommendations, // Список рекомендаций
+      recommendationsMessage, // Сообщение о рекомендациях
+    });
+  } catch (err) {
+    console.error('Ошибка получения данных:', err); // Логируем ошибку
+    res.status(500).send('Ошибка сервера');
+  }
 });
+
+
+
+
 
 // Маршрут для страницы "Изучить"
 router.get('/explore', async (req, res) => {
@@ -209,10 +353,6 @@ router.get('/profile', async (req, res) => {
 
 
 
-
-
-
-
 // Регистрация (доступна только для неавторизованных пользователей)
 router.get('/register', ensureGuest, (req, res) => {
   res.render('register', { title: 'Регистрация' });
@@ -222,24 +362,23 @@ router.get('/register', ensureGuest, (req, res) => {
 router.post('/register', async (req, res) => {
   const { username, email, password } = req.body;
 
-
+  // Устанавливаем isPopular по умолчанию в false
+  const isPopular = false;
 
   try {
     // Хеширование пароля
     const hashedPassword = await bcrypt.hash(password, 10);
 
-
     // Получение подключения к базе данных
     const pool = await getConnection();
 
-
     // Добавление пользователя в базу данных
-    const result = await pool.request()
+    await pool.request()
       .input('username', sql.VarChar, username)
       .input('email', sql.VarChar, email)
       .input('PasswordHash', sql.VarChar, hashedPassword)  // Передаем хешированный пароль
-      .query('INSERT INTO Users (username, email, PasswordHash) VALUES (@username, @email, @PasswordHash)');
-
+      .input('isPopular', sql.Bit, isPopular) // Добавляем поле isPopular
+      .query('INSERT INTO Users (username, email, PasswordHash, isPopular) VALUES (@username, @email, @PasswordHash, @isPopular)');
 
     res.redirect('/login');
   } catch (err) {
@@ -247,7 +386,6 @@ router.post('/register', async (req, res) => {
     res.status(500).send('Ошибка при регистрации');
   }
 });
-
 
 // Вход (доступен только для неавторизованных пользователей)
 router.get('/login', ensureGuest, (req, res) => {

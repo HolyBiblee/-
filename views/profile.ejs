@@ -30,10 +30,12 @@
   <main>
     <div class="container">
       <section class="profile">
+        
         <h2>Профиль пользователя</h2>
         <div class="profile-container">
           <div class="profile-info">
-            <img src="/uploads/<%= user.profilePicture.split('/').pop() %>" alt="User Avatar" class="profile-avatar">
+            <img src="<%= user.profilePicture ? '/uploads/' + user.profilePicture.split('/').pop() : '/default-avatar.png' %>" alt="User Avatar" class="profile-avatar">
+
             <h3><%= user.profileName || 'Имя пользователя отсутствует' %></h3>
             <p><%= user.Description || 'Описание отсутствует' %></p>
             <button class="edit-profile" onclick="toggleEditForm()">Редактировать профиль</button>
@@ -47,7 +49,10 @@
                 <textarea id="description" name="description"><%= user.Description || 'Не указано' %></textarea>
                 <label for="profilePicture">Фотография профиля:</label>
                 <input type="file" id="profilePicture" name="profilePicture">
-                <button type="submit">Сохранить изменения</button>
+                <button type="submit">Сохранить изменения</button>   
+                <form action="/delete-account" method="POST" onsubmit="return confirm('Вы уверены, что хотите удалить свой аккаунт?');">
+                  <button type="submit">Удалить аккаунт</button>
+                </form>
               </form>
             </div>
           </div>
@@ -59,6 +64,7 @@
               <label for="media">Выберите файл:</label>
               <input type="file" name="media" id="media" accept="image/*,video/*" required>
               <button type="submit">Загрузить</button>
+              
             </form>
           </div>
         </div>

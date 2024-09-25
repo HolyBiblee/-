@@ -32,17 +32,28 @@
       <section class="hero">
         <h2>Фанаты и точка</h2>
         <p>Следите и подписывайтесь на ваших любимых авторов</p>
+        <a href="#content" class="explore-btn">Изучить</a>
       </section>
+      
+      <section class="search">
+        <input type="text" id="search" placeholder="Поиск авторов..." oninput="filterAuthors()">
+      </section>
+      
+      <section class="content" id="content">
+        <div class="card-grid">
+          <% authors.forEach(author => { %>
+            <div class="card"><img src="<%= author.profilePicture ? author.profilePicture.replace('public/', '') : '/uploads/default-avatar.png' %>" alt="<%= author.profileName || 'Имя отсутствует' %>" class="author-avatar">
 
-      <section class="content">
-        <div class="card">
-          <img src="https://via.placeholder.com/300" alt="Creator">
-          <h3>Имя автора</h3>
-          <p>Bio.</p>
-          <button>Подписаться</button>
+              <h3><%= author.profileName %></h3>
+              <p><%= author.Description || 'Описание отсутствует' %></p>
+              <form action="/subscribe/<%= author.id %>" method="POST">
+                <button type="submit">Подписаться</button>
+              </form>
+            </div>
+          <% }) %>
         </div>
-        <!-- Добавьте дополнительные карточки контента при необходимости -->
       </section>
+     
     </div>
   </main>
 
@@ -51,5 +62,21 @@
       <p>&copy; 2024 Фанаты и точка. Все права защищены.</p>
     </div>
   </footer>
+  <script src="/scripts/index.js"></script>
+  <script>
+    function filterAuthors() {
+      const input = document.getElementById('search').value.toLowerCase();
+      const cards = document.querySelectorAll('.card');
+
+      cards.forEach(card => {
+        const name = card.querySelector('h3').textContent.toLowerCase();
+        if (name.includes(input)) {
+          card.style.display = '';
+        } else {
+          card.style.display = 'none';
+        }
+      });
+    }
+  </script>
 </body>
 </html>

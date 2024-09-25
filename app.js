@@ -1,10 +1,14 @@
-// app.js
 const express = require('express');
 const path = require('path');
 const session = require('express-session');
 const passport = require('passport');
 const flash = require('connect-flash');
-require('./config/passport')(passport);  // Ensure passport configuration is loaded
+const methodOverride = require('method-override'); // Импортируем метод-перекрытие
+
+
+
+
+require('./config/passport')(passport);  // Убедитесь, что конфигурация паспорта загружена
 
 const app = express();
 
@@ -35,8 +39,10 @@ app.use((req, res, next) => {
   next();
 });
 
-// Обработка POST запросов
-app.use(express.urlencoded({ extended: true }));
+
+
+// Настройка middleware для переопределения методов
+app.use(methodOverride('_method'));
 
 // Настройка представлений
 app.set('views', path.join(__dirname, 'views'));

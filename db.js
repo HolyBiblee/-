@@ -15,6 +15,12 @@ async function getConnection() {
     try {
         const pool = await sql.connect(config);
         console.log('Connected to MSSQL');
+
+        // Переместите обработчик сюда
+        pool.on('debug', (msg) => {
+            console.log('SQL:', msg);
+        });
+
         return pool;
     } catch (err) {
         console.error('Database connection failed:', err);
