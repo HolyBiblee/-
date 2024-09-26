@@ -38,20 +38,38 @@
       <section class="search">
         <input type="text" id="search" placeholder="Поиск авторов..." oninput="filterAuthors()">
       </section>
-      
       <section class="content" id="content">
-        <div class="card-grid">
+        <div class="authors-grid">
           <% authors.forEach(author => { %>
-            <div class="card"><img src="<%= author.profilePicture ? author.profilePicture.replace('public/', '') : '/uploads/default-avatar.png' %>" alt="<%= author.profileName || 'Имя отсутствует' %>" class="author-avatar">
-              <h3><%= author.profileName %></h3>
-              <p><%= author.Description || 'Описание отсутствует' %></p>
-              <form action="/subscribe/<%= author.id %>" method="POST">
+            <div class="author-card">
+              <a href="/profile/<%= author.id %>" onclick="console.log('Переход на профиль:', <%= author.id %>);"> <!-- Ссылка на профиль автора -->
+                <!-- Ссылка на профиль автора -->
+                <img src="<%= author.profilePicture ? author.profilePicture.replace('public/', '') : '/uploads/default-avatar.png' %>" alt="<%= author.profileName || 'Имя отсутствует' %>" class="author-avatar">
+                <h3><%= author.profileName %></h3>
+                <p><%= author.Description || 'Описание отсутствует' %></p>
+              </a>
+              <form action="/subscribe/<%= author.id %>" method="POST" style="margin-top: 10px;">
                 <button type="submit">Подписаться</button>
               </form>
             </div>
           <% }) %>
         </div>
       </section>
+      
+      <script>
+        document.querySelectorAll('.profile-link').forEach(link => {
+          link.addEventListener('click', function(event) {
+            event.preventDefault(); // Предотвращаем переход по ссылке
+            const profileUrl = this.href; // Сохраняем ссылку
+            console.log(`Пользователь нажал на ссылку профиля: ${profileUrl}`); // Логирование в консоль
+      
+            // Переход по ссылке после логирования
+            window.location.href = profileUrl;
+          });
+        });
+      </script>
+      
+      
      
     </div>
   </main>

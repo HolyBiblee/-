@@ -54,6 +54,12 @@ app.use(express.static(path.join(__dirname, 'public')));
 // Использование маршрутов (включая все аутентификационные маршруты в index.js)
 app.use('/', require('./routes/index'));
 
+app.use((req, res, next) => {
+  console.log(`${req.method} ${req.url}`);
+  next();
+});
+
+
 // Обработка 404 ошибок
 app.use((req, res, next) => {
   res.status(404).send('Страница не найдена)))');
