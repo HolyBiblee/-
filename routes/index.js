@@ -11,60 +11,35 @@ const path = require('path');
 const upload = multer({ dest: 'public/uploads' }); // Путь для сохранения файлов
 const fs = require('fs');
 
-// Просмотр чужого профиля
-// Просмотр профиля
-router.get('/profile/:id', async (req, res) => {
-  const userId = req.params.id; // Получаем ID пользователя из параметров URL
-  console.log(`Пользователь ${req.user ? req.user.username : 'гость'} пытается просмотреть профиль ID: ${userId}`); // Логирование перехода
+
+// Просмотр профиля (как для авторизованного пользователя, так и для других пользователей)
+router.get('/profile/:id?', async (req, res) => {
+  
+  const userId = req.params.id || (req.isAuthenticated() ? req.user.Id : null);
+  console.log('Запрос на профиль получен с ID:', userId);
+  console.log('req.params:', req.params);
+  console.log('isAuthenticated:', req.isAuthenticated());
+  console.log('Authenticated user ID:', req.isAuthenticated() ? req.user.Id : 'Not authenticated');
+
+  // Проверка, был ли передан userId
+  if (!userId || userId === 'null') {
+    return res.status(400).send('ID пользователя не передан или некорректен');
+  }
 
   try {
     const pool = await getConnection();
-    
-    // Получение данных пользователя
-    const userResult = await pool.request()
-      .input('id', sql.Int, userId)
-      .query('SELECT id, username, email, Description, profilePicture, profileName FROM Users WHERE id = @id');
 
-    const user = userResult.recordset[0];
-
-    if (!user) {
-      return res.status(404).send('Пользователь не найден');
-    }
-
-    // Получение постов пользователя
-    const postsResult = await pool.request()
-      .input('userId', sql.Int, userId)
-      .query('SELECT id, mediaType, mediaPath, caption FROM Posts WHERE userId = @userId');
-
-    // Удаляем 'public/' из mediaPath
-    postsResult.recordset.forEach(post => {
-      post.mediaPath = post.mediaPath.replace('public/', '');
-    });
-
-    res.render('profile', { title: `${user.profileName}'s Profile`, user, posts: postsResult.recordset });
-  } catch (err) {
-    console.error('Ошибка при получении данных пользователя:', err);
-    res.status(500).send('Ошибка при получении данных пользователя');
-  }
-});
-
-
-// Страница профиля для авторизованного пользователя
-router.get('/profile', async (req, res) => {
-  console.log('Запрос на свой профиль получен'); // Лог для проверки
-  if (!req.isAuthenticated()) {
-    return res.redirect('/login');
-  }
-
-  const userId = req.user.Id; // Получаем ID пользователя из сессии
-
-  try {
-    const pool = await getConnection();
+    // Получение пользователя из базы данных
     const result = await pool.request()
       .input('id', sql.Int, userId)
       .query('SELECT id, username, email, Description, profilePicture, profileName FROM Users WHERE id = @id');
 
     const user = result.recordset[0];
+
+    // Проверка, существует ли пользователь
+    if (!user) {
+      return res.status(404).send('Пользователь не найден');
+    }
 
     // Получение постов пользователя
     const posts = await pool.request()
@@ -76,16 +51,17 @@ router.get('/profile', async (req, res) => {
       post.mediaPath = post.mediaPath.replace('public/', '');
     });
 
-    if (!user) {
-      return res.status(404).send('Пользователь не найден');
-    }
-
+    // Рендерим страницу профиля
     res.render('profile', { title: 'Профиль', user, posts: posts.recordset });
   } catch (err) {
     console.error('Ошибка при получении данных пользователя:', err);
     res.status(500).send('Ошибка при получении данных пользователя');
   }
 });
+
+
+
+
 
 
 

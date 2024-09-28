@@ -12,6 +12,11 @@ require('./config/passport')(passport);  // Убедитесь, что конф�
 
 const app = express();
 
+app.use((req, res, next) => {
+  console.log(`${req.method} ${req.url}`);
+  next();
+});
+
 // Настройка сессий
 app.use(session({
   secret: 'your-secret-key',
@@ -34,10 +39,7 @@ app.use((req, res, next) => {
   next();
 });
 
-app.use((req, res, next) => {
-  console.log(`${req.method} ${req.url}`);
-  next();
-});
+
 
 
 
@@ -53,6 +55,9 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 // Использование маршрутов (включая все аутентификационные маршруты в index.js)
 app.use('/', require('./routes/index'));
+const authorsRouter = require('./routes/authors');
+app.use('/authors', authorsRouter);
+
 
 app.use((req, res, next) => {
   console.log(`${req.method} ${req.url}`);

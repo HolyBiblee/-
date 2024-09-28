@@ -14,7 +14,7 @@ const config = {
 async function getConnection() {
     try {
         const pool = await sql.connect(config);
-        console.log('Connected to MSSQL');
+        //console.log('Connected to MSSQL');
 
         // Переместите обработчик сюда
         pool.on('debug', (msg) => {

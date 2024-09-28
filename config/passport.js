@@ -36,17 +36,17 @@ module.exports = function(passport) {
   ));
 
   passport.serializeUser(function(user, done) {
-    console.log('Сериализация пользователя:', user); // Для отладки
-    if (!user.Id) {
-        console.error('ID пользователя отсутствует');
-        return done(new Error('ID пользователя отсутствует'));
-    }
+    //console.log('Сериализация пользователя:', user); // Для отладки
+    //if (!user.Id) {
+        //console.error('ID пользователя отсутствует');
+        //return done(new Error('ID пользователя отсутствует'));
+    //}
     done(null, user.Id); // Сохраните ID пользователя
 });
 
 passport.deserializeUser(async function(id, done) {
     try {
-        console.log('Десериализация пользователя, ID:', id); // Для отладки
+        //console.log('Десериализация пользователя, ID:', id); // Для отладки
         const pool = await getConnection();
         const result = await pool.request()
             .input('id', sql.Int, id)
@@ -55,10 +55,10 @@ passport.deserializeUser(async function(id, done) {
         const user = result.recordset[0];
         
         if (user) {
-            console.log('Найден пользователь:', user); // Для отладки
+            //console.log('Найден пользователь:', user); // Для отладки
             done(null, user);  // Передаем объект пользователя
         } else {
-            console.log('Пользователь не найден'); // Для отладки
+            //console.log('Пользователь не найден'); // Для отладки
             done(null, false); // Убедитесь, что не передаете ошибку, если пользователь не найден
         }
     } catch (err) {
