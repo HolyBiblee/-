@@ -24,7 +24,8 @@ module.exports = function(passport) {
         const isMatch = await bcrypt.compare(password, user.PasswordHash);
 
         if (isMatch) {
-          return done(null, user);
+          // Перенаправляем на профиль с помощью done
+          return done(null, user, { redirectTo: `/profile/${user.Id}` }); 
         } else {
           return done(null, false, { message: 'Неверный пароль' });
         }

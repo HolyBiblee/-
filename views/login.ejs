@@ -15,8 +15,10 @@
           <li><a href="/">Главная</a></li>
           <li><a href="/explore">Изучить</a></li>
           <li><a href="/messages">Мессенджер</a></li>
-          <li><a href="/profile">Профиль</a></li>
-
+          <li><% if (user) { %>
+            <a href="/profile">Профиль</a>
+          <% } %>
+          </li>
         </ul>
       </nav>
     </div>
@@ -41,5 +43,3 @@
   <footer>...</footer>
 </body>
 </html>
-
-

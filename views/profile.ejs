@@ -15,11 +15,11 @@
           <li><a href="/">Главная</a></li>
           <li><a href="/explore">Изучить</a></li>
           <li><a href="/messages">Мессенджер</a></li>
-          <% if (!user) { %>
+          <% if (!currentUser) { %>
             <li><a href="/login">Войти</a></li>
             <li><a href="/register">Регистрация</a></li>
           <% } else { %>
-            <li><a href="/profile">Профиль</a></li>
+            <li><a href="/profile/<%= currentUser.Id %>">Профиль</a></li>
             <li><a href="/logout">Выйти</a></li>
           <% } %>
         </ul>
@@ -34,42 +34,51 @@
         <h2>Профиль пользователя</h2>
         <div class="profile-container">
           <div class="profile-info">
-            <img src="<%= user.profilePicture ? '/uploads/' + user.profilePicture.split('/').pop() : '/default-avatar.png' %>" alt="User Avatar" class="profile-avatar">
+            <img src="<%= profileUser.profilePicture ? '/uploads/' + profileUser.profilePicture.split('/').pop() : '/uploads/default-avatar.png' %>" alt="User Avatar" class="profile-avatar">
 
-            <h3><%= user.profileName || 'Имя пользователя отсутствует' %></h3>
-            <p><%= user.Description || 'Описание отсутствует' %></p>
-            <button class="edit-profile" onclick="toggleEditForm()">Редактировать профиль</button>
-            <div id="editProfileForm" style="display:none;">
-              <form action="/profile/edit" method="POST" enctype="multipart/form-data">
-                <label for="profileName">Имя пользователя:</label>
-                <input type="text" id="profileName" name="profileName" value="<%= user.profileName %>" required>
-                <label for="email">Email:</label>
-                <input type="email" id="email" name="email" value="<%= user.email %>" required>
-                <label for="description">Описание:</label>
-                <textarea id="description" name="description"><%= user.Description || 'Не указано' %></textarea>
-                <label for="profilePicture">Фотография профиля:</label>
-                <input type="file" id="profilePicture" name="profilePicture">
-                <button type="submit">Сохранить изменения</button>   
+            <h3><%= profileUser.profileName || 'Имя пользователя отсутствует' %></h3>
+            <p><%= profileUser.Description || 'Описание отсутствует' %></p>
+            <% if (user && user._id === profileUser._id) { %>
+  <button class="edit-profile" onclick="toggleEditForm()">Редактировать профиль</button>
+  <div id="editProfileForm" style="display:none;">
+    <form action="/profile/edit" method="POST" enctype="multipart/form-data">
+      <label for="profileName">Имя пользователя:</label>
+      <input type="text" id="profileName" name="profileName" value="<%= profileUser.profileName %>" required>
+      <label for="email">Email:</label>
+      <input type="email" id="email" name="email" value="<%= profileUser.email %>" required>
+      <label for="description">Описание:</label>
+      <textarea id="description" name="description"><%= profileUser.Description || 'Не указано' %></textarea>
+      <label for="profilePicture">Фотография профиля:</label>
+      <input type="file" id="profilePicture" name="profilePicture">
+      <button type="submit">Сохранить изменения</button>   
+      
+    </form>
+                
                 <form action="/delete-account" method="POST" onsubmit="return confirm('Вы уверены, что хотите удалить свой аккаунт?');">
                   <button type="submit">Удалить аккаунт</button>
                 </form>
+              </div>
+            <% } %>
+          </div>
+          
+          <% if (user && user._id === profileUser._id) { %>
+            <div class="upload-container">
+              <h2>Загрузить контент</h2>
+              <form class="upload-form" action="/upload" method="POST" enctype="multipart/form-data">
+                <label for="caption">Подпись:</label>
+                <input type="text" name="caption" id="caption" required>
+                
+                <label for="media">Выберите файл:</label>
+                <input type="file" name="media" id="media" accept="image/*,video/*" required>
+                
+                <button type="submit">Загрузить</button>
               </form>
             </div>
-          </div>
-          <div class="upload-container">
-            <h2>Загрузить контент</h2>
-            <form class="upload-form" action="/upload" method="POST" enctype="multipart/form-data">
-              <label for="caption">Подпись:</label>
-              <input type="text" name="caption" id="caption" required>
-              <label for="media">Выберите файл:</label>
-              <input type="file" name="media" id="media" accept="image/*,video/*" required>
-              <button type="submit">Загрузить</button>
-              
-            </form>
-          </div>
+          <% } %>
         </div>
+        
         <section class="user-posts">
-          <h3>Ваши посты</h3>
+          <h3>Посты пользователя</h3>
           <div class="posts-container">
             <% posts.forEach(post => { %>
               <div class="post">
@@ -82,10 +91,11 @@
                     Ваш браузер не поддерживает видео.
                   </video>
                 <% } %>
-                <form action="/post/delete/<%= post.id %>" method="POST" onsubmit="return confirm('Вы уверены, что хотите удалить этот пост?');">
-                  <button type="submit" class="delete-button">Удалить пост</button>
-              </form>
-              
+                <% if (currentUser && currentUser.Id === profileUser.Id) { %>
+                  <form action="/post/delete/<%= post.id %>" method="POST" onsubmit="return confirm('Вы уверены, что хотите удалить этот пост?');">
+                    <button type="submit" class="delete-button">Удалить пост</button>
+                  </form>
+                <% } %>
               </div>
             <% }) %>
           </div>

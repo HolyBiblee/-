@@ -1,3 +1,4 @@
+<!-- views/index.ejs -->
 <!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -15,11 +16,11 @@
           <li><a href="/">Главная</a></li>
           <li><a href="/explore">Изучить</a></li>
           <li><a href="/messages">Мессенджер</a></li>
-          <% if (!user) { %>
+          <% if (!currentUser) { %>
             <li><a href="/login">Войти</a></li>
             <li><a href="/register">Регистрация</a></li>
           <% } else { %>
-            <li><a href="/profile">Профиль</a></li>
+            <li><a href="/profile/<%= currentUser.Id %>">Профиль</a></li>
             <li><a href="/logout">Выйти</a></li>
           <% } %>
         </ul>
@@ -41,46 +42,43 @@
 
       <section class="content" id="content">
         <div class="authors-grid">
-            <% authors.forEach(author => { %>
-                <div class="author-card" data-id="<%= author.id %>">
-                    <script>
-                        console.log('Author ID:', <%= author.id %>); // Логируем ID автора
-                    </script>
-                    <a href="#" onclick="goToProfile(<%= author.id ? author.id : 'null' %>); return false;">Профиль</a>
-                    <img src="<%= author.profilePicture ? author.profilePicture.replace('public/', '') : '/uploads/default-avatar.png' %>"
-                         alt="<%= author.profileName || 'Имя отсутствует' %>"
-                         class="author-avatar">
-                    <h3><%= author.profileName %></h3>
-                    <p><%= author.Description || 'Описание отсутствует' %></p>
-                    
-                    <form action="/subscribe/<%= author.id %>" method="POST" style="margin-top: 10px;">
-                        <button type="submit">Подписаться</button>
-                    </form>
-                </div>
-            <% }) %>
+          <% authors.forEach(author => { %>
+            <div class="author-card" data-id="<%= author.id %>">
+              <script>
+                console.log('Author ID:', <%= author.id %>);
+              </script>
+              <a href="#" onclick="goToProfile(<%= author.id ? author.id : 'null' %>); return false;">Профиль</a>
+              <img src="<%= author.profilePicture ? '/uploads/' + author.profilePicture.split('/').pop() : '/uploads/default-avatar.png' %>" alt="<%= author.profileName || 'Имя отсутствует' %>" class="author-avatar">
+              <h3><%= author.profileName %></h3>
+              <p><%= author.Description || 'Описание отсутствует' %></p>
+              <% if (currentUser) { %>
+                <form action="/subscribe/<%= author.id %>" method="POST" style="margin-top: 10px;">
+                  <button type="submit">Подписаться</button>
+                </form>
+              <% } %>
+            </div>
+          <% }) %>
         </div>
-    </section>
-     
+      </section>
 
+      <script src="/scripts/goToProfile.js"></script>
       <script>
         function goToProfile(authorId) {
-            console.log('Navigating to profile with ID:', authorId); // Логируем переход на профиль
-            if (authorId) {
-                window.location.href = `/profile/${authorId}`; // Переход на страницу профиля
-            } else {
-                console.error('Author ID is null or undefined'); // Логируем ошибку, если ID отсутствует
-            }
+          console.log('Navigating to profile with ID:', authorId); // Логируем ID
+          if (authorId) {
+            window.location.href = `/profile/${authorId}`; // Переход на страницу профиля
+          } else {
+            console.error('Author ID is null or undefined'); // Логируем ошибку, если ID отсутствует
+          }
         }
 
-      
-
         function filterAuthors() {
-          const input = document.getElementById('search').value.toLowerCase();
-          const cards = document.querySelectorAll('.author-card'); // Исправьте селектор, чтобы соответствовать классу
+          const query = document.getElementById('search').value.toLowerCase();
+          const cards = document.querySelectorAll('.author-card');
 
           cards.forEach(card => {
-            const name = card.querySelector('h3').textContent.toLowerCase();
-            if (name.includes(input)) {
+            const authorName = card.querySelector('h3').textContent.toLowerCase();
+            if (authorName.includes(query)) {
               card.style.display = '';
             } else {
               card.style.display = 'none';
