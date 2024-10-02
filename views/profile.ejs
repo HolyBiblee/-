@@ -38,30 +38,30 @@
 
             <h3><%= profileUser.profileName || 'Имя пользователя отсутствует' %></h3>
             <p><%= profileUser.Description || 'Описание отсутствует' %></p>
-            <% if (user && user._id === profileUser._id) { %>
-  <button class="edit-profile" onclick="toggleEditForm()">Редактировать профиль</button>
-  <div id="editProfileForm" style="display:none;">
-    <form action="/profile/edit" method="POST" enctype="multipart/form-data">
-      <label for="profileName">Имя пользователя:</label>
-      <input type="text" id="profileName" name="profileName" value="<%= profileUser.profileName %>" required>
-      <label for="email">Email:</label>
-      <input type="email" id="email" name="email" value="<%= profileUser.email %>" required>
-      <label for="description">Описание:</label>
-      <textarea id="description" name="description"><%= profileUser.Description || 'Не указано' %></textarea>
-      <label for="profilePicture">Фотография профиля:</label>
-      <input type="file" id="profilePicture" name="profilePicture">
-      <button type="submit">Сохранить изменения</button>   
-      
-    </form>
-                
+            <% if (currentUser && currentUser.Id === profileUser.id) { %>
+              <button class="edit-profile" onclick="toggleEditForm()">Редактировать профиль</button>
+              <div id="editProfileForm" style="display:none;">
+                <form action="/profile/edit" method="POST" enctype="multipart/form-data">
+                  <label for="profileName">Имя пользователя:</label>
+                  <input type="text" id="profileName" name="profileName" value="<%= profileUser.profileName %>" required>
+                  <label for="email">Email:</label>
+                  <input type="email" id="email" name="email" value="<%= profileUser.email %>" required>
+                  <label for="description">Описание:</label>
+                  <textarea id="description" name="description"><%= profileUser.Description || 'Не указано' %></textarea>
+                  <label for="profilePicture">Фотография профиля:</label>
+                  <input type="file" id="profilePicture" name="profilePicture">
+                  <button type="submit">Сохранить изменения</button>   
+                </form>
+                            
                 <form action="/delete-account" method="POST" onsubmit="return confirm('Вы уверены, что хотите удалить свой аккаунт?');">
+                  <input type="hidden" name="userId" value="<%= currentUser.Id %>"> 
                   <button type="submit">Удалить аккаунт</button>
                 </form>
               </div>
             <% } %>
           </div>
           
-          <% if (user && user._id === profileUser._id) { %>
+          <% if (currentUser && currentUser.Id === profileUser.id) { %>
             <div class="upload-container">
               <h2>Загрузить контент</h2>
               <form class="upload-form" action="/upload" method="POST" enctype="multipart/form-data">
@@ -91,7 +91,7 @@
                     Ваш браузер не поддерживает видео.
                   </video>
                 <% } %>
-                <% if (currentUser && currentUser.Id === profileUser.Id) { %>
+                <% if (currentUser && currentUser.Id === profileUser.id) { %>
                   <form action="/post/delete/<%= post.id %>" method="POST" onsubmit="return confirm('Вы уверены, что хотите удалить этот пост?');">
                     <button type="submit" class="delete-button">Удалить пост</button>
                   </form>

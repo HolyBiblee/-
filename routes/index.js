@@ -10,6 +10,8 @@ const multer = require('multer');
 const path = require('path');
 //const upload = multer({ dest: 'public/uploads' }); // Путь для сохранения файлов
 const fs = require('fs');
+const { verifyPostOwnership } = require('../middleware/ownershipMiddleware');
+
 
 // Настройка хранения загруженных файлов с помощью multer
 const storage = multer.diskStorage({
@@ -69,7 +71,8 @@ router.get('/profile/:id?', async (req, res) => {
     });
 
     console.log('Полученные посты пользователя:', posts.recordset);
-
+    console.log('Текущий пользователь:', req.user);
+    console.log('Профиль пользователя:', user);
     // Рендерим страницу профиля с передачей currentUser и profileUser
     res.render('profile', { 
       title: 'Профиль', 
@@ -190,16 +193,17 @@ function filterAuthors() {
 
 
 // Маршрут для удаления поста
-router.post('/post/delete/:id', async (req, res) => {
+router.post('/post/delete/:id', ensureAuth, verifyPostOwnership, async (req, res) => {
   const postId = req.params.id;
+  const userId = req.user.Id;
 
   try {
     const pool = await getConnection();
 
-    // Получаем информацию о посте, чтобы найти медиафайл
+    // Получаем информацию о посте, чтобы проверить владельца
     const result = await pool.request()
       .input('id', sql.Int, postId)
-      .query('SELECT mediaPath FROM Posts WHERE id = @id');
+      .query('SELECT userId, mediaPath FROM Posts WHERE id = @id');
 
     const post = result.recordset[0];
 
@@ -207,8 +211,13 @@ router.post('/post/delete/:id', async (req, res) => {
       return res.status(404).send('Пост не найден');
     }
 
+    // Проверяем, что пост принадлежит текущему пользователю
+    if (post.userId !== userId) {
+      return res.status(403).send('У вас нет прав для удаления этого поста.');
+    }
+
     // Удаление файла медиа из файловой системы
-    const mediaFilePath = path.join(__dirname, '..', 'uploads', post.mediaPath);
+    const mediaFilePath = path.join(__dirname, '..', 'public', post.mediaPath);
     fs.unlink(mediaFilePath, (err) => {
       if (err) {
         console.error('Ошибка при удалении файла:', err);
@@ -220,7 +229,7 @@ router.post('/post/delete/:id', async (req, res) => {
       .input('id', sql.Int, postId)
       .query('DELETE FROM Posts WHERE id = @id');
 
-    res.redirect('/profile'); // Перенаправление на профиль после удаления поста
+    res.redirect(`/profile/${userId}`); // Перенаправление на профиль после удаления поста
   } catch (err) {
     console.error('Ошибка при удалении поста:', err);
     res.status(500).send('Ошибка при удалении поста');
@@ -229,8 +238,9 @@ router.post('/post/delete/:id', async (req, res) => {
 
 
 
+
 // Путь для загрузки контента в профиль
-router.post('/upload', upload.single('media'), async (req, res) => {
+router.post('/upload', ensureAuth,  upload.single('media'), async (req, res) => {
   if (!req.isAuthenticated()) {
     return res.redirect('/login');
   }
@@ -282,26 +292,30 @@ router.post('/login',
 );
 
 // Маршрут для редактирования профиля
-router.post('/profile/edit', upload.single('profilePicture'), async (req, res) => {
-  if (!req.isAuthenticated()) {
-    return res.redirect('/login');
-  }
-
-  const userId = req.user.Id; // ID текущего пользователя
+router.post('/profile/edit', ensureAuth, upload.single('profilePicture'), async (req, res) => {
+  const userId = req.user.id; // Используем 'id' для согласованности
 
   // Получаем данные из формы
-  const { profileName, email, description } = req.body; // Добавляем profileName
+  const { profileName, email, description } = req.body;
   let profilePicture = req.file ? req.file.path.replace(/\\/g, '/') : null;
 
   try {
-    const pool = await getConnection(); // Перемещаем подключение сюда
+    const pool = await getConnection();
+    console.log('Получение profilePicture для пользователя с id:', userId);
 
     // Если нет нового файла, сохраняем старое значение
     if (!profilePicture) {
       const result = await pool.request()
         .input('id', sql.Int, userId)
         .query('SELECT profilePicture FROM Users WHERE id = @id');
-      profilePicture = result.recordset[0].profilePicture;
+
+      console.log('Результат запроса profilePicture:', result.recordset);
+
+      if (result.recordset.length > 0) {
+        profilePicture = result.recordset[0].profilePicture;
+      } else {
+        throw new Error('Пользователь не найден');
+      }
     }
 
     // Выполняем запрос на обновление данных
@@ -326,6 +340,8 @@ router.post('/profile/edit', upload.single('profilePicture'), async (req, res) =
     res.status(500).send('Ошибка при обновлении профиля');
   }
 });
+
+
 
 
 
